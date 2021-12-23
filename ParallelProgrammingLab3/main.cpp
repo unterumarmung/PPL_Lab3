@@ -17,7 +17,7 @@ __forceinline milliseconds measure_time(auto func) {
 }
 
 
-template <allowed T>
+template <allowed T, bool run_parallel = false>
 void run_test(size_t rows, size_t cols) {
 	auto** a = make_matrix<T>(rows, cols);
 	auto** b = make_matrix<T>(rows, cols);
@@ -43,9 +43,18 @@ void run_test(size_t rows, size_t cols) {
 	});
 	std::cout << "Asm implementation: " << asm_time << std::endl;
 
+	if constexpr (run_parallel) {
+		const auto parallel_time = measure_time([&] {
+			parallel_intrinsic_impl(a, b, rows, cols, c);
+		});
+		std::cout << "Parallel intrinsic implementation: " << parallel_time << std::endl;
+	}
+
+
 	delete_matrix(a, rows, cols);
 	delete_matrix(b, rows, cols);
 	delete_matrix(c, rows, cols);
+	std::cout << std::endl;
 }
 
 
@@ -58,7 +67,17 @@ int main() {
 
 	cols -= cols % alignment;
 
+	std::cout << "TEST FOR std::int8_t" << std::endl;
+	run_test<std::int8_t>(rows, cols);
 	std::cout << "TEST FOR std::int16_t" << std::endl;
-	run_test<int16_t>(rows, cols);
+	run_test<std::int16_t>(rows, cols);
+	std::cout << "TEST FOR std::int32_t" << std::endl;
+	run_test<std::int32_t>(rows, cols);
+	std::cout << "TEST FOR std::int64_t" << std::endl;
+	run_test<std::int64_t>(rows, cols);
+	std::cout << "TEST FOR float" << std::endl;
+	run_test<float>(rows, cols);
+	std::cout << "TEST FOR double" << std::endl;
+	run_test<double, true>(rows, cols);
 }
 

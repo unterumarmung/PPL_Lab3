@@ -117,3 +117,5 @@ consteval size_t get_step() {
 		return 16 / sizeof(T);
 	}
 }
+
+void parallel_intrinsic_impl(double** a, double** b, size_t rows, size_t cols, double** c);

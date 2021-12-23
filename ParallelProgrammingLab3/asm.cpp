@@ -8,7 +8,7 @@ template<> void asm_impl<std::int64_t>(std::int64_t** a, std::int64_t** b, size_
 		auto* cur_c = c[i];
 
 		using value_type = decltype(*cur_a);
-		const auto iteration_count = cols / sizeof(value_type);
+		const auto iteration_count = cols / get_step<value_type>();
 		constexpr auto type_size = sizeof(value_type);
 		constexpr auto step = get_step<value_type>() * type_size;
 
@@ -43,7 +43,7 @@ template<> void asm_impl<std::int32_t>(std::int32_t** a, std::int32_t** b, size_
 		auto* cur_c = c[i];
 
 		using value_type = decltype(*cur_a);
-		const auto iteration_count = cols / sizeof(value_type);
+		const auto iteration_count = cols / get_step<value_type>();
 		constexpr auto type_size = sizeof(value_type);
 		constexpr auto step = get_step<value_type>() * type_size;
 
@@ -78,7 +78,7 @@ template<> void asm_impl<std::int16_t>(std::int16_t** a, std::int16_t** b, size_
 		auto* cur_c = c[i];
 
 		using value_type = decltype(*cur_a);
-		const auto iteration_count = cols / sizeof(value_type);
+		const auto iteration_count = cols / get_step<value_type>();
 		constexpr auto type_size = sizeof(value_type);
 		constexpr auto step = get_step<value_type>() * type_size;
 
@@ -113,7 +113,7 @@ template<> void asm_impl<std::int8_t>(std::int8_t** a, std::int8_t** b, size_t r
 		auto* cur_c = c[i];
 
 		using value_type = decltype(*cur_a);
-		const auto iteration_count = cols / sizeof(value_type);
+		const auto iteration_count = cols / get_step<value_type>();
 		constexpr auto type_size = sizeof(value_type);
 		constexpr auto step = get_step<value_type>() * type_size;
 
@@ -142,13 +142,13 @@ template<> void asm_impl<std::int8_t>(std::int8_t** a, std::int8_t** b, size_t r
 }
 
 template<> void asm_impl<double>(double** a, double** b, size_t rows, size_t cols, double** c) {
-	for (size_t i = 0; i < rows; ++i) {
+	for (int i = 0; i < rows; ++i) {
 		auto* cur_a = a[i];
 		auto* cur_b = b[i];
 		auto* cur_c = c[i];
 
 		using value_type = decltype(*cur_a);
-		const auto iteration_count = cols / sizeof(value_type);
+		const auto iteration_count = cols / get_step<value_type>();
 		constexpr auto type_size = sizeof(value_type);
 		constexpr auto step = get_step<value_type>() * type_size;
 
@@ -183,9 +183,9 @@ template<> void asm_impl<float>(float** a, float** b, size_t rows, size_t cols, 
 		auto* cur_c = c[i];
 
 		using value_type = decltype(*cur_a);
-		const auto iteration_count = cols / sizeof(value_type);
+		const auto iteration_count = cols / get_step<value_type>();
 		constexpr auto type_size = sizeof(value_type);
-		constexpr auto step = get_step<value_type>();
+		constexpr auto step = get_step<value_type>() * type_size;
 
 		_asm {
 				mov esi, cur_a

@@ -124,6 +124,37 @@ void impl(T** a, T** b, size_t rows, size_t cols, T** c) {
 	}
 }
 
+template <allowed T>
+void parallel_impl(T** a, T** b, size_t rows, size_t cols, T** c) {
+	constexpr auto step = get_step<T>();
+
+	#pragma omp parallel for
+	for (int i = 0; i < rows; ++i) {
+		for (size_t j = 0; j < cols; j += step) {
+			const auto a_ij = load(&a[i][j]);
+			const auto b_ij = load(&b[i][j]);
+
+			using result_t = decltype(add<T>(a_ij, b_ij));
+
+			result_t lhs;
+			result_t rhs;
+
+			if constexpr (std::integral<T>) {
+				lhs = max<T>(a_ij, b_ij);
+				rhs = min<T>(a_ij, b_ij);
+			}
+			else {
+				lhs = sqrt(a_ij);
+				rhs = sqrt(b_ij);
+			}
+
+			const auto result = add<T>(lhs, rhs);
+
+			store(&c[i][j], result);
+		}
+	}
+}
+
 template<> void intrinsic_impl(double** a, double** b, size_t rows, size_t cols, double** c) {
 	impl(a, b, rows, cols, c);
 }
@@ -143,4 +174,8 @@ template<> void intrinsic_impl<std::int32_t>(std::int32_t** a, std::int32_t** b,
 }
 template<> void intrinsic_impl<std::int64_t>(std::int64_t** a, std::int64_t** b, size_t rows, size_t cols, std::int64_t** c) {
 	impl(a, b, rows, cols, c);
+}
+
+void parallel_intrinsic_impl(double** a, double** b, size_t rows, size_t cols, double** c) {
+	parallel_impl(a, b, rows, cols, c);
 }
